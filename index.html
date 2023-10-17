@@ -41,7 +41,8 @@ function myMove() {
 	  diry = -diry;
 	 }
 	 else {
-      pos++; 
+      posx+=dirx;
+	  posy+=diry;
       elem.style.top = posx + "px"; 
       elem.style.left = posy + "px"; 
     }
