@@ -2,10 +2,11 @@
 <html>
 <style>
 #container {
-  width: 400px;
+  width: 600px;
   height: 400px;
   position: relative;
   background: yellow;
+  border: 1px;
 }
 #animate {
   width: 50px;
@@ -26,16 +27,23 @@
 function myMove() {
   let id = null;
   const elem = document.getElementById("animate");   
-  let pos = 0;
+  let dirx = -1;
+  let diry = -1;
+  let posx = 0;
+  let posy = 0;
   clearInterval(id);
   id = setInterval(frame, 5);
   function frame() {
-    if (pos == 350) {
-      clearInterval(id);
-    } else {
+    if (absolute(posx) == 550) {
+      dirx = -dirx;
+    } 
+	else if (absolute(posy)= 550) {
+	  diry = -diry;
+	 }
+	 else {
       pos++; 
-      elem.style.top = pos + "px"; 
-      elem.style.left = pos + "px"; 
+      elem.style.top = posx + "px"; 
+      elem.style.left = posy + "px"; 
     }
   }
 }
