@@ -34,18 +34,17 @@ function myMove() {
   clearInterval(id);
   id = setInterval(frame, 5);
   function frame() {
-    if (absolute(posx) == 550) {
+    if (posx == 550 || posx == 0) {
       dirx = -dirx;
     } 
-	else if (absolute(posy)= 550) {
+	if (posy == 350 || posy == 0) {
 	  diry = -diry;
 	 }
-	 else {
       posx = posx+dirx;
 	  posy = posy+diry;
-      elem.style.top = posx + "px"; 
-      elem.style.left = posy + "px"; 
-    }
+      elem.style.top = posy + "px"; 
+      elem.style.left = posx + "px"; 
+    
   }
 }
 </script>
