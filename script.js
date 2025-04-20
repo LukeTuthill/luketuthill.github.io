@@ -1,54 +1,179 @@
-class Timer {
-    constructor() {
-        this.date = new Date();
-    }
-    setStartTime() {
-        this.date = new Date();
-    }
-    getDifference(currentDate) {
-        const h = currentDate.getHours()-this.date.getHours();
-        const m = currentDate.getMinutes()-this.date.getMinutes();
-        const s = currentDate.getSeconds()-this.date.getSeconds();
-        return h*3600+m*60+s;
-    }
-}
-const timer = new Timer();
+// Game elements
+const car = document.getElementById('car');
+const map = document.getElementById('map');
+const siteInfo = document.getElementById('site-info');
+const speedValue = document.getElementById('speed-value');
+const destinations = document.querySelectorAll('.destination');
 
-function game1Start() {
-    document.getElementById("score").style.display = "none";
-    timer.setStartTime();
-    document.getElementById("game1").style.display = "block";
-    document.getElementById("game1Init").style.display = "none";
+// Car properties
+let carPos = { x: 400, y: 300 };
+let carAngle = 0;
+let carSpeed = 0;
+const maxSpeed = 8;
+const acceleration = 0.15;
+const deceleration = 0.05;
+const turningSpeed = 3;
+
+// Game state
+const keys = {};
+let activeDestination = null;
+let lastEffectTime = 0;
+
+// Initialize car position
+updateCarPosition();
+
+// Event listeners
+window.addEventListener('keydown', (e) => keys[e.key] = true);
+window.addEventListener('keyup', (e) => keys[e.key] = false);
+
+destinations.forEach(dest => {
+    dest.addEventListener('click', () => {
+        selectDestination(dest);
+    });
+});
+
+// Game loop
+function gameLoop() {
+    moveCarByKeys();
+    checkCollisions();
+    createEffects();
+    requestAnimationFrame(gameLoop);
 }
 
-function game1() {
-    const guess = document.getElementById("game1Guess").value;
-    const score = guess-timer.getDifference(new Date());
-    score = 2;
-    if (score > 0) {
-        document.getElementById("score").innerHTML = "You were "+score+" seconds over";
-    }
-    else if (score < 0) {
-        score*=-1;
-        document.getElementById("score").innerHTML = "You were "+score+" seconds under";
-    }
-    else {
-        document.getElementById("score").innerHTML = "You were right on the money";
+function moveCarByKeys() {
+    // Acceleration and deceleration
+    if (keys['ArrowUp']) {
+        carSpeed = Math.min(carSpeed + acceleration, maxSpeed);
+    } else if (keys['ArrowDown']) {
+        carSpeed = Math.max(carSpeed - acceleration, -maxSpeed/2);
+    } else {
+        // Gradually slow down when no key is pressed
+        if (carSpeed > 0) {
+            carSpeed = Math.max(0, carSpeed - deceleration);
+        } else if (carSpeed < 0) {
+            carSpeed = Math.min(0, carSpeed + deceleration);
+        }
     }
     
-    document.getElementById("game1").style.display = "none";
+    // Turn the car
+    if (keys['ArrowLeft']) {
+        carAngle -= turningSpeed * (carSpeed / maxSpeed);
+    }
+    if (keys['ArrowRight']) {
+        carAngle += turningSpeed * (carSpeed / maxSpeed);
+    }
+    
+    // Set speedometer
+    speedValue.textContent = Math.abs(Math.round(carSpeed * 20));
+    
+    // Only move if there's speed
+    if (carSpeed !== 0) {
+        const radians = carAngle * Math.PI / 180;
+        carPos.x += Math.sin(radians) * carSpeed;
+        carPos.y -= Math.cos(radians) * carSpeed;
+        
+        // Map boundaries
+        carPos.x = Math.max(20, Math.min(map.offsetWidth - 20, carPos.x));
+        carPos.y = Math.max(10, Math.min(map.offsetHeight - 10, carPos.y));
+        
+        updateCarPosition();
+    }
+    
+    // Enter key to select destination
+    if (keys['Enter'] && activeDestination) {
+        selectDestination(activeDestination);
+        keys['Enter'] = false;
+    }
 }
 
-function reset() {
-    document.getElementById("score").style.display = "none";
-
-    document.getElementById("game1Init").style.display = "none";
-    document.getElementById("game1").style.display = "none";
-
-    document.getElementById("game2Init").style.display = "none";
-    document.getElementById("game2").style.display = "none";
-
-    document.getElementById("game3Init").style.display = "none";
-    document.getElementById("game3").style.display = "none";
+function updateCarPosition() {
+    car.style.left = `${carPos.x - car.offsetWidth / 2}px`;
+    car.style.top = `${carPos.y - car.offsetHeight / 2}px`;
+    car.style.transform = `rotate(${carAngle + 90}deg)`;
 }
 
+function checkCollisions() {
+    // Reset active destination
+    if (activeDestination) {
+        activeDestination.classList.remove('active');
+        activeDestination = null;
+    }
+    
+    // Check for collisions with destinations
+    destinations.forEach(dest => {
+        const destRect = dest.getBoundingClientRect();
+        const carRect = car.getBoundingClientRect();
+        
+        if (
+            carRect.left < destRect.right &&
+            carRect.right > destRect.left &&
+            carRect.top < destRect.bottom &&
+            carRect.bottom > destRect.top
+        ) {
+            dest.classList.add('active');
+            activeDestination = dest;
+            siteInfo.textContent = `Current location: ${dest.querySelector('div:last-child').textContent}`;
+        }
+    });
+    
+    if (!activeDestination) {
+        siteInfo.textContent = 'Drive the car to a location to select it';
+    }
+}
+
+function selectDestination(dest) {
+    const destId = dest.getAttribute('data-id');
+    const destName = dest.querySelector('div:last-child').textContent;
+    
+    // Show selection
+    siteInfo.innerHTML = `<strong>Selected: ${destName}</strong><br>
+                         (This is where site navigation would happen)`;
+                         
+    // Flash effect
+    dest.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+    setTimeout(() => {
+        dest.style.backgroundColor = 'rgba(100, 100, 200, 0.9)';
+    }, 200);
+    
+    // In a real app, you would navigate to the relevant page here
+    console.log(`Selected destination: ${destId}`);
+}
+
+function createEffects() {
+    // Create car movement effects (dust/smoke)
+    if (Math.abs(carSpeed) > 1 && Date.now() - lastEffectTime > 100) {
+        // Calculate position behind the car
+        const radians = carAngle * Math.PI / 180;
+        const effectX = carPos.x - Math.sin(radians) * 20;
+        const effectY = carPos.y + Math.cos(radians) * 20;
+        
+        const effect = document.createElement('div');
+        effect.className = 'car-effect';
+        effect.style.left = `${effectX - 5}px`;
+        effect.style.top = `${effectY - 5}px`;
+        map.appendChild(effect);
+        
+        // Animation
+        let opacity = 0.3;
+        let size = 5;
+        const effectInterval = setInterval(() => {
+            size += 0.5;
+            opacity -= 0.02;
+            effect.style.width = `${size}px`;
+            effect.style.height = `${size}px`;
+            effect.style.left = `${effectX - size/2}px`;
+            effect.style.top = `${effectY - size/2}px`;
+            effect.style.opacity = opacity;
+            
+            if (opacity <= 0) {
+                clearInterval(effectInterval);
+                effect.remove();
+            }
+        }, 50);
+        
+        lastEffectTime = Date.now();
+    }
+}
+
+// Start the game
+gameLoop();
