@@ -2,7 +2,6 @@
 const car = document.getElementById('car');
 const map = document.getElementById('map');
 const siteInfo = document.getElementById('site-info');
-const speedValue = document.getElementById('speed-value');
 const destinations = document.querySelectorAll('.destination');
 
 // Car properties
@@ -11,7 +10,7 @@ let carAngle = 0;
 let carSpeed = 0;
 const maxSpeed = 8;
 const acceleration = 0.15;
-const deceleration = 0.05;
+const deceleration = 0.03;
 const turningSpeed = 3;
 
 // Game state
@@ -42,10 +41,10 @@ function gameLoop() {
 
 function moveCarByKeys() {
     // Acceleration and deceleration
-    if (keys['ArrowUp']) {
+    if (keys['ArrowUp'] || keys['w']) {
         carSpeed = Math.min(carSpeed + acceleration, maxSpeed);
-    } else if (keys['ArrowDown']) {
-        carSpeed = Math.max(carSpeed - acceleration, -maxSpeed/2);
+    } else if (keys['ArrowDown'] || keys['s']) {
+        carSpeed = Math.max(carSpeed - acceleration, -maxSpeed);
     } else {
         // Gradually slow down when no key is pressed
         if (carSpeed > 0) {
@@ -56,15 +55,12 @@ function moveCarByKeys() {
     }
     
     // Turn the car
-    if (keys['ArrowLeft']) {
+    if (keys['ArrowLeft'] || keys['a']) {
         carAngle -= turningSpeed * (carSpeed / maxSpeed);
     }
-    if (keys['ArrowRight']) {
+    if (keys['ArrowRight'] || keys['d']) {
         carAngle += turningSpeed * (carSpeed / maxSpeed);
     }
-    
-    // Set speedometer
-    speedValue.textContent = Math.abs(Math.round(carSpeed * 20));
     
     // Only move if there's speed
     if (carSpeed !== 0) {

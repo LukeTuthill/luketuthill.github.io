@@ -7,29 +7,20 @@ body {
     color: white;
 }
 
-#game-container {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    background-color: #333;
-}
-
 #map {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 800px;
-    height: 600px;
-    background-color: #284935;
-    border: 4px solid #555;
-    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    background-color: slategray;
 }
 
 #car {
     position: absolute;
-    width: 40px;
-    height: 20px;
+    width: 80px;
+    height: 40px;
     background-color: darkblue;
     border-radius: 5px;
     transition: transform 0.1s;
@@ -88,34 +79,14 @@ body {
     z-index: 1;
 }
 
-.tree {
-    position: absolute;
-    width: 20px;
-    height: 30px;
-    background-color: #196619;
-    border-radius: 50% 50% 20% 20%;
-    z-index: 2;
-}
-
-.tree:after {
-    content: '';
-    position: absolute;
-    width: 4px;
-    height: 10px;
-    background-color: #8B4513;
-    bottom: -8px;
-    left: 8px;
-}
-
 #info-panel {
     position: absolute;
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 15px;
+    padding: 15px 20px;
     background-color: rgba(0, 0, 0, 0.7);
     border-radius: 10px;
-    width: 60%;
     text-align: center;
 }
 
